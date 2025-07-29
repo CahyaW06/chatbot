@@ -16,7 +16,7 @@
         <div class="mb-4">
             <a type="button" class="btn btn-primary w-100" href="#addFaq">Tambah FAQ</a>
         </div>
-        <ol>
+        <ol start="{{ (page - 1) * limit + 1 }}">
             {% for faq in faqs %}
             <li class="mb-3 border-bottom p-2">
                 <div class="d-flex gap-5 justify-content-between align-items-center">
@@ -34,6 +34,17 @@
             </li>
             {% endfor %}
         </ol>
+        <div class="pagination d-flex justify-content-between gap-3 align-items-baseline">
+        {% if has_prev %}
+            <a type="button" class="btn btn-primary" href="/?q={{ query or '' }}&page={{ page - 1 }}&limit={{ limit }}">← Sebelumnya</a>
+        {% endif %}
+
+        <span>Halaman {{ page }} dari {{ total_pages }}</span>
+
+        {% if has_next %}
+            <a type="button" class="btn btn-primary" href="/?q={{ query or '' }}&page={{ page + 1 }}&limit={{ limit }}">Selanjutnya →</a>
+        {% endif %}
+        </div>
     </div>
 
     <div class="container-xl mx-auto my-5 px-5" id="addFaq">

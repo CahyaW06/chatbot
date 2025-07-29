@@ -10,6 +10,7 @@ import uvicorn
 from model.hybrid_instance import *
 from model.hybrid_search import *
 from config import *
+from math import ceil
 
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
@@ -37,16 +38,33 @@ def get_db():
         db.close()
 
 @app.get("/", response_class=HTMLResponse)
-def read_faqs(request: Request, q: Optional[str] = None, db: Session = Depends(get_db)):
-    if q:
-        faqs = db.query(FAQ).filter(FAQ.pertanyaan.like(f"%{q}%")).order_by(FAQ.id.desc()).all()
-    else:
-        faqs = db.query(FAQ).order_by(FAQ.id.desc()).all()
-    return templates.TemplateResponse("index.html", {
-            "request": request, "faqs": faqs, "query": q
-        }
-    )
+def read_faqs(
+    request: Request,
+    q: Optional[str] = None,
+    page: int = 1,
+    limit: int = 50,
+    db: Session = Depends(get_db)
+):
+    base_query = db.query(FAQ)
 
+    if q:
+        base_query = base_query.filter(FAQ.pertanyaan.like(f"%{q}%"))
+
+    total = base_query.count()
+    faqs = base_query.order_by(FAQ.id.desc()).offset((page - 1) * limit).limit(limit).all()
+
+    total_pages = ceil(total / limit)
+    return templates.TemplateResponse("index.html", {
+        "request": request,
+        "faqs": faqs,
+        "query": q,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": total_pages,
+        "has_next": page < total_pages,
+        "has_prev": page > 1,
+    })
 @app.post("/add")
 def add_faq(pertanyaan: str = Form(...), jawaban: str = Form(...), db: Session = Depends(get_db)):
     faq = FAQ(pertanyaan=pertanyaan, jawaban=jawaban)
