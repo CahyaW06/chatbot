@@ -1,15 +1,14 @@
 import mysql.connector
 from sentence_transformers import SentenceTransformer
 from functools import lru_cache
-
-chat_memory = {}
+from config import *
 
 def load_faq():
     conn = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="chatbot-humas"
+        host=DB_HOST,
+        user=DB_USER,
+        password=DB_PASSWORD,
+        database=DB_NAME
     )
     cursor = conn.cursor()
 
@@ -42,5 +41,6 @@ def save_cache(session_id, query, results):
 
 def clear_cache():
     global chat_memory
+
     chat_memory = {}
     print('chat_memory has been cleared.')

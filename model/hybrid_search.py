@@ -2,7 +2,7 @@ import numpy as np
 import re
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity as cos_sim
-from hybrid_instance import *
+from .hybrid_instance import *
 # import redis
 
 class HybridSearch:

@@ -6,16 +6,10 @@ from sqlalchemy import create_engine, Column, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Optional
-from dotenv import load_dotenv
-import uvicorn, os
-
-load_dotenv()
-
-# load env
-DB_HOST=os.getenv("DB_HOST")
-DB_NAME=os.getenv("DB_NAME")
-DB_USER=os.getenv("DB_USER")
-DB_PASSWORD=os.getenv("DB_PASSWORD")
+import uvicorn
+from model.hybrid_instance import *
+from model.hybrid_search import *
+from config import *
 
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
