@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Ubah FAQ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container-xl mx-auto my-5 px-5">
+        <div class="d-flex flex-column">
+            <h1>Ubah FAQ</h1>
+            <form method="post">
+                <input type="hidden" name="q" value="{{ query }}">
+                <div class="mb-3">
+                    <label for="pertanyaan" class="form-label">Pertanyaan</label>
+                    <input type="text" class="form-control" id="pertanyaan" name="pertanyaan" placeholder="Tulis pertanyaan di sini..." value="{{ faq.pertanyaan }}" required>
+                </div>
+                <div class="mb-3">
+                    <label for="jawaban" class="form-label">Jawaban</label>
+                    <textarea class="form-control" rows="5" name="jawaban" placeholder="Tulis jawaban di sini..." required>{{ faq.jawaban }}</textarea>
+                </div>
+                <div class="d-flex justify-content-between gap-5 align-items-center">
+                    <a href="/">Kembali ke Daftar</a>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manajemen FAQ</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="mx-auto container-xl my-5 px-5">
+        <h1 class="mb-4">Daftar FAQ</h1>
+        <form method="get">
+            <div class="input-group mb-3 px-2">
+                <input type="text" name="q" class="form-control" placeholder="Cari pertanyaan..." value="{{ query or '' }}">
+                <button type="submit" class="btn btn-primary">Cari</button>
+            </div>
+        </form>
+        <ul>
+            {% for faq in faqs %}
+            <li class="mb-3 border-bottom p-2">
+                <div class="d-flex gap-5 justify-content-between align-items-center">
+                    <div class="d-flex flex-column gap-1">
+                        <span class="fs-5"><strong>{{ faq.pertanyaan }}</strong></span>
+                        <p>{{ faq.jawaban }}</p>
+                    </div>
+                    <div class="d-flex flex-column gap-1">
+                        <a href="/edit/{{ faq.id }}?q={{ query }}" role="button" class="btn btn-sm btn-warning">Ubah</a>
+                        <form action="/delete/{{ faq.id }}" method="post" style="display:inline;">
+                            <button type="submit" class="btn btn-sm btn-danger">Hapus</button>
+                        </form>
+                    </div>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div class="container-xl mx-auto my-5 px-5">
+        <h2>Tambah FAQ Baru</h2>
+        <div class="d-flex flex-column px-2">
+            <form method="post" action="/add">
+                <div class="mb-3">
+                    <label for="pertanyaan" class="form-label">Pertanyaan</label>
+                    <input type="text" class="form-control" id="pertanyaan" name="pertanyaan" placeholder="Tulis pertanyaan di sini..." required>
+                </div>
+                <div class="mb-3">
+                    <label for="jawaban" class="form-label">Jawaban</label>
+                    <textarea class="form-control" rows="5" name="jawaban" placeholder="Tulis jawaban di sini..." required></textarea><br>
+                </div>
+                <div class="d-flex justify-content-between gap-5 align-items-center">
+                    <button type="submit" class="btn btn-primary">Tambah FAQ</button>
+                    <div class="d-flex gap-2">
+                        <a href="/" role="button" class="btn btn-danger">Perbarui Model</a>
+                        <a href="/" role="button" class="btn btn-success">Testing Model</a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
