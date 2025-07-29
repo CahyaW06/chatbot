@@ -8,11 +8,14 @@
     <div class="mx-auto container-xl my-5 px-5">
         <h1 class="mb-4">Daftar FAQ</h1>
         <form method="get">
-            <div class="input-group mb-3 px-2">
+            <div class="input-group mb-3">
                 <input type="text" name="q" class="form-control" placeholder="Cari pertanyaan..." value="{{ query or '' }}">
                 <button type="submit" class="btn btn-primary">Cari</button>
             </div>
         </form>
+        <div class="mb-4">
+            <a type="button" class="btn btn-primary w-100" href="#addFaq">Tambah FAQ</a>
+        </div>
         <ul>
             {% for faq in faqs %}
             <li class="mb-3 border-bottom p-2">
@@ -33,7 +36,7 @@
         </ul>
     </div>
 
-    <div class="container-xl mx-auto my-5 px-5">
+    <div class="container-xl mx-auto my-5 px-5" id="addFaq">
         <h2>Tambah FAQ Baru</h2>
         <div class="d-flex flex-column px-2">
             <form method="post" action="/add">
