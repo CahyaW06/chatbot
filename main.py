@@ -6,9 +6,18 @@ from sqlalchemy import create_engine, Column, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Optional
-import uvicorn
+from dotenv import load_dotenv
+import uvicorn, os
 
-DATABASE_URL = "mysql+mysqlconnector://root:@localhost/chatbot-humas"
+load_dotenv()
+
+# load env
+DB_HOST=os.getenv("DB_HOST")
+DB_NAME=os.getenv("DB_NAME")
+DB_USER=os.getenv("DB_USER")
+DB_PASSWORD=os.getenv("DB_PASSWORD")
+
+DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -39,7 +48,10 @@ async def read_faqs(request: Request, q: Optional[str] = None, db: Session = Dep
         faqs = db.query(FAQ).filter(FAQ.pertanyaan.like(f"%{q}%")).all()
     else:
         faqs = db.query(FAQ).all()
-    return templates.TemplateResponse("index.html", {"request": request, "faqs": faqs, "query": q})
+    return templates.TemplateResponse("index.html", {
+            "request": request, "faqs": faqs, "query": q
+        }
+    )
 
 @app.post("/add")
 async def add_faq(pertanyaan: str = Form(...), jawaban: str = Form(...), db: Session = Depends(get_db)):
