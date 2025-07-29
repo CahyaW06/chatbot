@@ -25,6 +25,7 @@ class HybridSearch:
 
     def search(self, query, session_id=None, use_cache=False):
         # dict
+        cached = None
         if session_id:
             cached = load_context(session_id) if use_cache is True else ""
 

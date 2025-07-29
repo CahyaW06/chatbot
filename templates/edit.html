@@ -9,7 +9,7 @@
         <div class="d-flex flex-column">
             <h1>Ubah FAQ</h1>
             <form method="post">
-                <input type="hidden" name="q" value="{{ query }}">
+                <input type="hidden" name="q" value="{{ query or '' }}">
                 <div class="mb-3">
                     <label for="pertanyaan" class="form-label">Pertanyaan</label>
                     <input type="text" class="form-control" id="pertanyaan" name="pertanyaan" placeholder="Tulis pertanyaan di sini..." value="{{ faq.pertanyaan }}" required>

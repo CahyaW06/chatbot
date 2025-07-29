@@ -7,10 +7,9 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Optional
 import uvicorn
-from model.hybrid_instance import *
-from model.hybrid_search import *
 from config import *
 from math import ceil
+from pydantic import BaseModel
 
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
@@ -28,7 +27,16 @@ class FAQ(Base):
     pertanyaan = Column(Text, nullable=False)
     jawaban = Column(Text, nullable=False)
 
+class AskInput(BaseModel):
+    pertanyaan: str
+
 Base.metadata.create_all(bind=engine)
+
+# load cache
+chat_memory = {}
+
+# load model
+chatbot = initiate_chatbot()
 
 def get_db():
     db = SessionLocal()
@@ -107,6 +115,38 @@ def delete_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
 
     referer = request.headers.get("referer")
     return RedirectResponse(url=referer if referer else "/", status_code=303)
+
+@app.get('/ask-form')
+def ask_form(request: Request):
+    return templates.TemplateResponse("test_model.html", {"request": request})
+
+@app.post('/ask')
+def ask(data: AskInput):
+    try:
+        query = data.pertanyaan
+        answer = chatbot.search(query=query)[0][1]
+
+        return {
+            "status": "success",
+            "message": "Pertanyaan berhasil diajukan",
+            "pertanyaan": query,
+            "jawaban": answer
+        }
+    except Exception as e:
+        return {
+            "status": "error",
+            "message": str(e)
+        }
+
+@app.get("/update-model")
+def update_model():
+    global chatbot
+
+    try:
+        chatbot = initiate_chatbot()
+        return {"message": "Chatbot berhasil diperbarui"}
+    except Exception as e:
+        return {"message": str(e)}
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

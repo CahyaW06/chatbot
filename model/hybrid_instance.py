@@ -3,12 +3,12 @@ from sentence_transformers import SentenceTransformer
 from functools import lru_cache
 from config import *
 
-def load_faq():
+def load_faq(host, user, password, database, port=3306):
     conn = mysql.connector.connect(
-        host=DB_HOST,
-        user=DB_USER,
-        password=DB_PASSWORD,
-        database=DB_NAME
+        host=host,
+        user=user,
+        password=password,
+        database=database
     )
     cursor = conn.cursor()
 
@@ -22,6 +22,7 @@ def load_faq():
 
 @lru_cache(maxsize=1)
 def get_model(model_name='intfloat/multilingual-e5-small'):
+    print('loading model...')
     return SentenceTransformer(model_name)
 
 def load_cache(session_id):
