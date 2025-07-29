@@ -39,9 +39,9 @@ def get_db():
 @app.get("/", response_class=HTMLResponse)
 async def read_faqs(request: Request, q: Optional[str] = None, db: Session = Depends(get_db)):
     if q:
-        faqs = db.query(FAQ).filter(FAQ.pertanyaan.like(f"%{q}%")).all()
+        faqs = db.query(FAQ).filter(FAQ.pertanyaan.like(f"%{q}%")).order_by(FAQ.id.desc()).all()
     else:
-        faqs = db.query(FAQ).all()
+        faqs = db.query(FAQ).order_by(FAQ.id.desc()).all()
     return templates.TemplateResponse("index.html", {
             "request": request, "faqs": faqs, "query": q
         }

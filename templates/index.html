@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Manajemen FAQ</title>
+    <title>Manajemen FAQ Humas</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css">
 </head>
 <body>
     <div class="mx-auto container-xl my-5 px-5">
-        <h1 class="mb-4">Daftar FAQ</h1>
+        <h1 class="mb-4">Daftar FAQ Humas</h1>
         <form method="get">
             <div class="input-group mb-3">
                 <input type="text" name="q" class="form-control" placeholder="Cari pertanyaan..." value="{{ query or '' }}">
@@ -16,7 +16,7 @@
         <div class="mb-4">
             <a type="button" class="btn btn-primary w-100" href="#addFaq">Tambah FAQ</a>
         </div>
-        <ul>
+        <ol>
             {% for faq in faqs %}
             <li class="mb-3 border-bottom p-2">
                 <div class="d-flex gap-5 justify-content-between align-items-center">
@@ -33,7 +33,7 @@
                 </div>
             </li>
             {% endfor %}
-        </ul>
+        </ol>
     </div>
 
     <div class="container-xl mx-auto my-5 px-5" id="addFaq">
