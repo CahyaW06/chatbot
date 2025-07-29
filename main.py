@@ -37,7 +37,7 @@ def get_db():
         db.close()
 
 @app.get("/", response_class=HTMLResponse)
-async def read_faqs(request: Request, q: Optional[str] = None, db: Session = Depends(get_db)):
+def read_faqs(request: Request, q: Optional[str] = None, db: Session = Depends(get_db)):
     if q:
         faqs = db.query(FAQ).filter(FAQ.pertanyaan.like(f"%{q}%")).order_by(FAQ.id.desc()).all()
     else:
@@ -48,21 +48,21 @@ async def read_faqs(request: Request, q: Optional[str] = None, db: Session = Dep
     )
 
 @app.post("/add")
-async def add_faq(pertanyaan: str = Form(...), jawaban: str = Form(...), db: Session = Depends(get_db)):
+def add_faq(pertanyaan: str = Form(...), jawaban: str = Form(...), db: Session = Depends(get_db)):
     faq = FAQ(pertanyaan=pertanyaan, jawaban=jawaban)
     db.add(faq)
     db.commit()
     return RedirectResponse(url="/", status_code=303)
 
 @app.get("/edit/{faq_id}", response_class=HTMLResponse)
-async def edit_faq_form(request: Request, faq_id: int, q: Optional[str] = None, db: Session = Depends(get_db)):
+def edit_faq_form(request: Request, faq_id: int, q: Optional[str] = None, db: Session = Depends(get_db)):
     faq = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not faq:
         raise HTTPException(status_code=404, detail="FAQ tidak ditemukan")
     return templates.TemplateResponse("edit.html", {"request": request, "faq": faq, "query": q})
 
 @app.post("/edit/{faq_id}")
-async def edit_faq(
+def edit_faq(
     faq_id: int,
     pertanyaan: str = Form(...),
     jawaban: str = Form(...),
@@ -80,7 +80,7 @@ async def edit_faq(
     return RedirectResponse(url="/", status_code=303)
 
 @app.post("/delete/{faq_id}")
-async def delete_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
+def delete_faq(request: Request, faq_id: int, db: Session = Depends(get_db)):
     faq = db.query(FAQ).filter(FAQ.id == faq_id).first()
     if not faq:
         raise HTTPException(status_code=404, detail="FAQ tidak ditemukan")
