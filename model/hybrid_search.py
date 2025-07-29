@@ -48,7 +48,7 @@ class HybridSearch:
             tfidf_scores = cos_sim(tfidf_query, self.tfidf_matrix)[0]
 
             # Bobot tambahan jika ada tanda tanya
-            tfidf_scores *= 1.2 if self.is_question(paragraph) else tfidf_scores
+            tfidf_scores *= 1.5 if self.is_question(paragraph) else tfidf_scores
 
             # Gabungkan skor baru dengan skor lama jika ada
             if cached_score is not None:
