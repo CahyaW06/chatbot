@@ -1,5 +1,5 @@
-from fastapi import FastAPI, HTTPException, Request, Form, Depends, HTTPException
-from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
+from fastapi import FastAPI, HTTPException, Request, Form, Depends, HTTPException, Query
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse, PlainTextResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, Text
@@ -220,24 +220,30 @@ async def webhook_post(request: Request):
 
     return JSONResponse(content={"status": "success"}, status_code=200)
 
-@app.route("/webhook", methods=["GET"])
-def webhook_get():
-    mode = request.args.get("hub.mode")
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-
+@app.get("/webhook")
+async def webhook_get(
+    mode: str = Query(None, alias="hub.mode"),
+    token: str = Query(None, alias="hub.verify_token"),
+    challenge: str = Query(None, alias="hub.challenge")
+):
     print(f"GET /webhook - Mode: {mode}, Token: {token}, Challenge: {challenge}")
 
     if mode and token:
         if mode == "subscribe" and token == WEBHOOK_VERIFY_TOKEN:
             print("Webhook verified successfully!")
-            return challenge, 200
+            return PlainTextResponse(content=challenge, status_code=200)
         else:
             print("Webhook verification failed: Mode or token mismatch.")
-            return jsonify({"status": "error", "message": "Verification token mismatch"}), 403
+            return JSONResponse(
+                status_code=403,
+                content={"status": "error", "message": "Verification token mismatch"}
+            )
     else:
         print("Webhook verification failed: Missing mode or token.")
-        return jsonify({"status": "error", "message": "Missing mode or token"}), 400
+        return JSONResponse(
+            status_code=400,
+            content={"status": "error", "message": "Missing mode or token"}
+        )
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
