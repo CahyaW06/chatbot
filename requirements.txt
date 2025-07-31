@@ -4,6 +4,8 @@ uvicorn[standard]
 jinja2
 sqlalchemy
 mysql-connector-python
+requests
+python-multipart
 
 # redis
 numpy

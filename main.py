@@ -1,15 +1,15 @@
-from fastapi import FastAPI, HTTPException, Request, Form, Depends
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import FastAPI, HTTPException, Request, Form, Depends, HTTPException
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from sqlalchemy import create_engine, Column, Integer, Text
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Optional
-import uvicorn
-from config import *
-from math import ceil
 from pydantic import BaseModel
+from math import ceil
+import requests, uvicorn, json
+from config import *
 
 DATABASE_URL = f"mysql+mysqlconnector://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
@@ -147,6 +147,97 @@ def update_model():
         return {"message": "Chatbot berhasil diperbarui"}
     except Exception as e:
         return {"message": str(e)}
+
+@app.post("/webhook")
+async def webhook_post(request: Request):
+    try:
+        data = await request.json()
+        print(f"Incoming webhook message: {json.dumps(data, indent=2)}")
+
+        changes = data.get("entry", [{}])[0].get("changes", [{}])[0]
+        value = changes.get("value", {})
+        message_object = value.get("messages", [{}])[0]
+        metadata = value.get("metadata", {})
+
+    except Exception as e:
+        print(f"Error parsing webhook payload structure: {e}")
+        raise HTTPException(status_code=400, detail="Malformed payload")
+
+    if message_object and message_object.get("type") == "text":
+        business_phone_number_id = metadata.get("phone_number_id")
+        user_message_text = message_object.get("text", {}).get("body")
+        message_from = message_object.get("from")
+        message_id = message_object.get("id")
+
+        if not all([business_phone_number_id, user_message_text, message_from, message_id]):
+            print("Error: Missing essential message data.")
+            raise HTTPException(status_code=400, detail="Missing message data")
+
+        print(f"User message: '{user_message_text}' from {message_from}")
+
+        # get reply by bot
+        reply = chatbot.search(user_message_text)[0][1]
+
+        # Send reply
+        graph_api_url = f"https://graph.facebook.com/v22.0/{business_phone_number_id}/messages"
+        headers = {
+            "Authorization": f"Bearer {GRAPH_API_TOKEN}",
+            "Content-Type": "application/json",
+        }
+
+        payload_reply = {
+            "messaging_product": "whatsapp",
+            "to": message_from,
+            "text": {"body": reply},
+            "context": {"message_id": message_id},
+        }
+
+        try:
+            response_reply = requests.post(graph_api_url, headers=headers, json=payload_reply)
+            response_reply.raise_for_status()
+            print(f"Reply sent successfully: {response_reply.json()}")
+        except requests.exceptions.RequestException as e:
+            print(f"Error sending reply message: {e}")
+            if e.response is not None:
+                print(f"Response content: {e.response.content}")
+
+        # Mark message as read
+        if reply != "":
+            payload_read = {
+                "messaging_product": "whatsapp",
+                "status": "read",
+                "message_id": message_id,
+            }
+
+            try:
+                response_read = requests.post(graph_api_url, headers=headers, json=payload_read)
+                response_read.raise_for_status()
+                print(f"Message marked as read: {response_read.json()}")
+            except requests.exceptions.RequestException as e:
+                print(f"Error marking message as read: {e}")
+                if e.response is not None:
+                    print(f"Response content: {e.response.content}")
+
+    return JSONResponse(content={"status": "success"}, status_code=200)
+
+@app.route("/webhook", methods=["GET"])
+def webhook_get():
+    mode = request.args.get("hub.mode")
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    print(f"GET /webhook - Mode: {mode}, Token: {token}, Challenge: {challenge}")
+
+    if mode and token:
+        if mode == "subscribe" and token == WEBHOOK_VERIFY_TOKEN:
+            print("Webhook verified successfully!")
+            return challenge, 200
+        else:
+            print("Webhook verification failed: Mode or token mismatch.")
+            return jsonify({"status": "error", "message": "Verification token mismatch"}), 403
+    else:
+        print("Webhook verification failed: Missing mode or token.")
+        return jsonify({"status": "error", "message": "Missing mode or token"}), 400
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
