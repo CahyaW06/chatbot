@@ -1,14 +1,12 @@
-python-dotenv
-fastapi
-uvicorn[standard]
-jinja2
-sqlalchemy
-mysql-connector-python
-requests
-python-multipart
-
-# redis
-numpy
-scikit-learn
-sentence-transformers
-jupyter
+python-dotenv==1.0.1
+fastapi==0.110.0
+uvicorn[standard]==0.29.0
+jinja2==3.1.3
+sqlalchemy==2.0.30
+mysql-connector-python==8.4.0
+requests==2.31.0
+python-multipart==0.0.9
+redis==5.0.4
+numpy==1.26.4
+scikit-learn==1.4.2
+sentence-transformers==2.7.0
