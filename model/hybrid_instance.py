@@ -20,8 +20,8 @@ def load_faq(host, user, password, database, port=3306):
 
     return faq
 
-@lru_cache(maxsize=1)
-def get_model(model_name='intfloat/multilingual-e5-small'):
+# @lru_cache(maxsize=1)
+def get_model(model_name):
     print('loading model...')
     return SentenceTransformer(model_name)
 

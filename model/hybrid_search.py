@@ -6,7 +6,7 @@ from .hybrid_instance import *
 # import redis
 
 class HybridSearch:
-    def __init__(self, model_name='intfloat/multilingual-e5-small', top_k=1, redis_host='localhost', redis_port=6379):
+    def __init__(self, model_name='LazarusNLP/all-indo-e5-small-v4', top_k=1, redis_host='localhost', redis_port=6379):
         self.model = get_model(model_name)
         self.top_k = top_k
         self.ttl = 28800
