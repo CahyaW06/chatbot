@@ -13,6 +13,8 @@ WEBHOOK_VERIFY_TOKEN = os.getenv("WEBHOOK_VERIFY_TOKEN")
 GRAPH_API_TOKEN = os.getenv("GRAPH_API_TOKEN")
 PORT = os.getenv("PORT", 5002) # Default to 5002 if not set
 
+WAHA_API_KEY=os.getenv("WAHA_API_KEY")
+
 def initiate_chatbot():
     from model.hybrid_instance import load_faq
     from model.hybrid_search import HybridSearch
