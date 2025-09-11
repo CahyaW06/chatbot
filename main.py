@@ -100,7 +100,7 @@ def edit_faq(
     faq.pertanyaan = pertanyaan
     faq.jawaban = jawaban
     db.commit()
-    if q:
+    if q is not None:
         return RedirectResponse(url=f"/?q={q}", status_code=303)
     return RedirectResponse(url="/", status_code=303)
 
