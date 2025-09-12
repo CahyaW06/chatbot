@@ -147,158 +147,44 @@ def update_model():
     except Exception as e:
         return {"message": str(e)}
 
-# @app.post("/webhook")
-# async def webhook_post(request: Request):
-#     try:
-#         data = await request.json()
-#         print(f"Incoming webhook message: {json.dumps(data, indent=2)}")
-
-#         changes = data.get("entry", [{}])[0].get("changes", [{}])[0]
-#         value = changes.get("value", {})
-#         message_object = value.get("messages", [{}])[0]
-#         metadata = value.get("metadata", {})
-
-#     except Exception as e:
-#         print(f"Error parsing webhook payload structure: {e}")
-#         raise HTTPException(status_code=400, detail="Malformed payload")
-
-#     if message_object and message_object.get("type") == "text":
-#         business_phone_number_id = metadata.get("phone_number_id")
-#         user_message_text = message_object.get("text", {}).get("body")
-#         message_from = message_object.get("from")
-#         message_id = message_object.get("id")
-
-#         if not all([business_phone_number_id, user_message_text, message_from, message_id]):
-#             print("Error: Missing essential message data.")
-#             raise HTTPException(status_code=400, detail="Missing message data")
-
-#         print(f"User message: '{user_message_text}' from {message_from}")
-
-#         # get reply by bot
-#         reply = chatbot.search(user_message_text)[0][1]
-
-#         # Send reply
-#         graph_api_url = f"https://graph.facebook.com/v22.0/{business_phone_number_id}/messages"
-#         headers = {
-#             "Authorization": f"Bearer {GRAPH_API_TOKEN}",
-#             "Content-Type": "application/json",
-#         }
-
-#         payload_reply = {
-#             "messaging_product": "whatsapp",
-#             "to": message_from,
-#             "text": {"body": reply},
-#             "context": {"message_id": message_id},
-#         }
-
-#         try:
-#             response_reply = requests.post(graph_api_url, headers=headers, json=payload_reply)
-#             response_reply.raise_for_status()
-#             print(f"Reply sent successfully: {response_reply.json()}")
-#         except requests.exceptions.RequestException as e:
-#             print(f"Error sending reply message: {e}")
-#             if e.response is not None:
-#                 print(f"Response content: {e.response.content}")
-
-#         # Mark message as read
-#         if reply != "":
-#             payload_read = {
-#                 "messaging_product": "whatsapp",
-#                 "status": "read",
-#                 "message_id": message_id,
-#             }
-
-#             try:
-#                 response_read = requests.post(graph_api_url, headers=headers, json=payload_read)
-#                 response_read.raise_for_status()
-#                 print(f"Message marked as read: {response_read.json()}")
-#             except requests.exceptions.RequestException as e:
-#                 print(f"Error marking message as read: {e}")
-#                 if e.response is not None:
-#                     print(f"Response content: {e.response.content}")
-
-#     return JSONResponse(content={"status": "success"}, status_code=200)
-
-# @app.get("/webhook")
-# async def webhook_get(
-#     mode: str = Query(None, alias="hub.mode"),
-#     token: str = Query(None, alias="hub.verify_token"),
-#     challenge: str = Query(None, alias="hub.challenge")
-# ):
-#     print(f"GET /webhook - Mode: {mode}, Token: {token}, Challenge: {challenge}")
-
-#     if mode and token:
-#         if mode == "subscribe" and token == WEBHOOK_VERIFY_TOKEN:
-#             print("Webhook verified successfully!")
-#             return PlainTextResponse(content=challenge, status_code=200)
-#         else:
-#             print("Webhook verification failed: Mode or token mismatch.")
-#             return JSONResponse(
-#                 status_code=403,
-#                 content={"status": "error", "message": "Verification token mismatch"}
-#             )
-#     else:
-#         print("Webhook verification failed: Missing mode or token.")
-#         return JSONResponse(
-#             status_code=400,
-#             content={"status": "error", "message": "Missing mode or token"}
-#         )
-
-@app.get("/waha-webhook")
+@app.post("/waha-webhook")
 async def waha_webhook(request: Request):
     payload = await request.json()
-    logging.info(f"Payload masuk: {payload}")
-    return {"status": "ok"}
+    if payload.get("event") == "message":
+        body = payload.get("payload")
+        message = body.get("body")
+        sender = body.get("from")
+        
+        answer = chatbot.search(message)[0][1]        
 
-# @app.post("/send-session-to-waha")
-# async def send_session_to_waha(request: Request):
-#     url = "http://waha:3000/api/sessions/default"  # ganti sesuai endpoint WAHA
-#     payload = {
-#         "config": {
-#             "metadata": {
-#             },
-#             "proxy": None,
-#             "debug": False,
-#             "ignore": {
-#                 "status": None,
-#                 "groups": None,
-#                 "channels": None
-#             },
-#             "noweb": {
-#                 "store": {
-#                     "enabled": True,
-#                     "fullSync": False
-#                 }
-#             },
-#             "webjs": {
-#                 "tagsEventsOn": False
-#             },
-#             "webhooks": [
-#                 {
-#                     "url": "http://chatbot/waha-webhook",
-#                     "events": [
-#                         "message",
-#                         "session.status"
-#                     ],
-#                     "hmac": None,
-#                     "retries": None,
-#                     "customHeaders": None
-#                 }
-#             ]
-#         }
-#     }
+        # send reply
+        waha_send_url = "http://waha:3000/api/sendText"
+        headers = {
+            "Content-Type": "application/json",
+            "X-Api-Key": f"{WAHA_API_KEY}"
+        }
+        data = {
+            "session": "default",
+            "chatId": f"{sender}",
+            "text": f"{answer}"
+        }
 
-#     headers = {
-#         f"X-Api-Key": "{WAHA_API_KEY}",
-#         "Content-Type": "application/json",
-#         "Accept": "application/json"
-#     }
+        response = requests.post(waha_send_url, json=data, headers=headers)
+        if response.status_code != 200:
+            return {
+                "status" : "500",
+                "message" : f"Error sending reply: {response.text}"
+            }
+        else:
+            return {
+                "status" : "200",
+                "message" : "Reply sent successfully"
+            }
 
-#     response = requests.put(url, json=payload, headers=headers)
-
-#     print("Status Code:", response.status_code)
-#     print("Response:", response.json())
-#     return {"status": "ok"}
+    return {
+        "status": "500",
+        "message": "payload empty"
+    }
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
