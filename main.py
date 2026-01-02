@@ -195,5 +195,21 @@ def update_model():
         print(f"Error triggering vector refresh: {e}")
         return {"message": "Gagal terhubung ke Vector Service. Pastikan container vector nyala."}
 
+@app.post("/delete-pending/{id}")
+def delete_pending(id: int, db: Session = Depends(get_db)):
+    # 1. Cari data berdasarkan ID
+    pending_item = db.query(FAQPending).filter(FAQPending.id == id).first()
+    
+    # 2. Cek kalau data ada
+    if not pending_item:
+        raise HTTPException(status_code=404, detail="Data tidak ditemukan")
+
+    # 3. Hapus & Commit
+    db.delete(pending_item)
+    db.commit()
+
+    # 4. Refresh halaman Pending
+    return RedirectResponse(url="/pending", status_code=303)
+
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000)

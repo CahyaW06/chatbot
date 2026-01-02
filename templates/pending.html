@@ -25,9 +25,15 @@
                             Chat di WhatsApp
                         </a>
                     </h5>
-                    <small class="text-muted">{{ item.created_at }}</small>
+                    <form action="/delete-pending/{{ item.id }}" method="post" onsubmit="return confirm('Yakin mau menghapus pertanyaan ini?\nData akan hilang permanen dan tidak bisa dibalas.');">
+                        <button type="submit" class="btn btn-outline-danger btn-sm" title="Hapus Pertanyaan">
+                            Hapus
+                        </button>
+                    </form>
+                    
                 </div>
                 
+                <small class="text-muted">{{ item.created_at }}</small>
                 <p class="mb-3 fs-5">
                     <strong>"{{ item.pertanyaan }}"</strong>
                 </p>
