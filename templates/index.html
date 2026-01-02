@@ -6,16 +6,23 @@
 </head>
 <body>
     <div class="mx-auto container-xl my-5 px-5">
-        <h1 class="mb-4">Daftar FAQ Humas</h1>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0">Daftar FAQ Humas</h1>
+            <a href="/pending" class="btn btn-warning fw-bold shadow-sm">
+                📩 Cek Pertanyaan Pending
+            </a>
+        </div>
         <form method="get">
             <div class="input-group mb-3">
                 <input type="text" name="q" class="form-control" placeholder="Cari pertanyaan..." value="{{ query or '' }}">
                 <button type="submit" class="btn btn-primary">Cari</button>
             </div>
         </form>
+
         <div class="mb-4">
             <a type="button" class="btn btn-primary w-100" href="#addFaq">Pergi ke Tambah FAQ</a>
         </div>
+
         <ol start="{{ (page - 1) * limit + 1 }}">
             {% for faq in faqs %}
             <li class="mb-3 border-bottom p-2">
@@ -34,6 +41,7 @@
             </li>
             {% endfor %}
         </ol>
+
         <div class="pagination d-flex justify-content-between gap-3 align-items-baseline">
         {% if has_prev %}
             <a type="button" class="btn btn-primary" href="/?q={{ query or '' }}&page={{ page - 1 }}&limit={{ limit }}">← Sebelumnya</a>
@@ -62,8 +70,7 @@
                 <div class="d-flex justify-content-between gap-5 align-items-center">
                     <button type="submit" class="btn btn-primary">Tambah FAQ</button>
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-danger" id="updateModelBtn" onclick="updateModel()">Perbarui Model</button>
-                        <a href="/ask-form" role="button" class="btn btn-success">Testing Model</a>
+                        <button type="button" class="btn btn-danger" id="updateModelBtn" onclick="updateModel()">Perbarui Index Vector</button>
                     </div>
                 </div>
             </form>
@@ -75,15 +82,28 @@
     <script>
         function updateModel() {
             let updateModelBtn = document.getElementById('updateModelBtn');
-            updateModel.innerText = 'Memperbarui...';
+            // Simpan teks asli
+            let originalText = updateModelBtn.innerText;
+            updateModelBtn.innerText = 'Memperbarui...';
+            updateModelBtn.disabled = true;
 
+            // Pastikan endpoint ini mengarah ke endpoint refresh vector kamu (jika ada)
+            // Kalau di arsitektur baru endpoint refresh ada di vector service (port 8080), 
+            // kamu mungkin perlu bikin proxy route di main.py dulu.
             fetch("/update-model", {
                 method: "GET",
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                updateModelBtn.innerText = 'Perbarui Model';
+                alert(data.message || 'Index berhasil diperbarui!');
+                updateModelBtn.innerText = originalText;
+                updateModelBtn.disabled = false;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Gagal memperbarui index.');
+                updateModelBtn.innerText = originalText;
+                updateModelBtn.disabled = false;
             });
         }
     </script>

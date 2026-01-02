@@ -7,6 +7,3 @@ mysql-connector-python==8.4.0
 requests==2.31.0
 python-multipart==0.0.9
 redis==5.0.4
-numpy==1.26.4
-scikit-learn==1.4.2
-sentence-transformers==3.0.0
